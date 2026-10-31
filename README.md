@@ -118,7 +118,7 @@ use `--no-build`: it skips the Next.js runtime's publish step and every
 `/_next/static/*` asset 404s.
 
 ### Development vs. production speed
-
+-------
 `npm run dev` compiles each route on first visit and ships unminified development
 JavaScript. On this machine that measured **0.5–7.7 s per page** (first visit to
 a route is the slowest), which is normal for the Next.js dev server and is
