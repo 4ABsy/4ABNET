@@ -90,7 +90,7 @@ export function toProductView(
   };
 }
 
-export async function getStockCounts(productIds: string[]): Promise<Record<string, number>> {
+export const getStockCounts = cache(async (productIds: string[]): Promise<Record<string, number>> => {
   if (!productIds.length) return {};
   const rows = await prisma.inventoryUnit.groupBy({
     by: ["productId"],
@@ -100,7 +100,7 @@ export async function getStockCounts(productIds: string[]): Promise<Record<strin
   const result: Record<string, number> = {};
   for (const row of rows) result[row.productId] = row._count._all;
   return result;
-}
+});
 
 /** Cached per request: the storefront layout and pages both need this list. */
 export const getVisibleCategories = cache(async (locale: Locale) => {
@@ -180,7 +180,7 @@ async function loadProducts(options: {
   includeOutOfStock?: boolean;
   sort?: "newest" | "price_asc" | "price_desc" | "default";
 }): Promise<ProductView[]> {
-  const { locale, categoryId, featuredOnly, limit, skip, query, sort } = options;
+  const { locale, categoryId, featuredOnly, limit = 100, skip = 0, query, sort } = options;
   const where: Record<string, unknown> = { isActive: true, isArchived: false };
   if (categoryId) where.categoryId = categoryId;
   if (featuredOnly) where.isFeatured = true;
@@ -202,15 +202,19 @@ async function loadProducts(options: {
         : sort === "newest"
           ? [{ createdAt: "desc" as const }]
           : [{ sortOrder: "asc" as const }, { createdAt: "desc" as const }];
-  const products = await prisma.product.findMany({
-    where,
-    include: PRODUCT_INCLUDE,
-    orderBy,
-    take: limit,
-    skip,
-  });
-  const stocks = await getStockCounts(products.map((p) => p.id));
-  return products.map((p) => toProductView(p, locale, stocks[p.id] ?? 0));
+  const [products, stocks] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      include: PRODUCT_INCLUDE,
+      orderBy,
+      take: limit,
+      skip,
+    }),
+    getStockCounts([]),
+  ]);
+  const productIds = products.map((p) => p.id);
+  const stockMap = productIds.length ? await getStockCounts(productIds) : {};
+  return products.map((p) => toProductView(p, locale, stockMap[p.id] ?? 0));
 }
 
 export async function countActiveProducts(options: {
