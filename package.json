@@ -1,0 +1,56 @@
+{
+  "name": "4abnet",
+  "version": "1.0.0",
+  "private": true,
+  "description": "4AB NET - multilingual eSIM e-commerce platform",
+  "scripts": {
+    "dev": "next dev",
+    "dev:fast": "next dev --turbopack",
+    "build": "prisma generate && next build",
+    "build:pg": "npm run schema:pg:check && prisma generate --schema prisma/postgres/schema.prisma && next build",
+    "build:netlify": "npm run db:pg:deploy && npm run build:pg",
+    "start": "next start",
+    "preview": "npm run build && next start",
+    "typecheck": "tsc --noEmit",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "db:pg:deploy": "node scripts/migrate-deploy.mjs",
+    "db:pg:status": "prisma migrate status --schema prisma/postgres/schema.prisma",
+    "db:sqlite:generate": "prisma generate",
+    "schema:pg": "node scripts/postgres-schema.mjs",
+    "schema:pg:check": "node scripts/postgres-schema.mjs --check",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "telegram:info": "node scripts/telegram-local.mjs info",
+    "telegram:discover": "node scripts/telegram-local.mjs discover",
+    "telegram:bridge": "node scripts/telegram-local.mjs bridge",
+    "admin:reset-password": "tsx scripts/reset-admin-password.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "overrides": {
+    "postcss": "8.5.32"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.3",
+    "next": "15.5.28",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "24.10.1",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "prisma": "6.19.3",
+    "tailwindcss": "4.3.3",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3",
+    "vitest": "^3.2.7"
+  }
+}

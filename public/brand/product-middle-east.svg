@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" role="img" aria-label="Sample Middle East illustration">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFF4D6"/><stop offset="1" stop-color="#E9A45B"/></linearGradient></defs>
+  <rect width="900" height="600" fill="url(#g)"/>
+  <circle cx="700" cy="140" r="120" fill="#ffffff" opacity="0.4"/>
+  <path d="M0 500c140-60 280-10 420-70s260 10 480-60v230H0Z" fill="#1C1F23" opacity="0.1"/>
+  <g fill="#1C1F23" opacity="0.85">
+    <path d="M290 420c40-70 100-80 160-60l50 20-40 80-150 30z"/>
+    <path d="M520 330c30-50 90-50 120-10s10 100-50 110-90-50-70-100Z"/>
+    <circle cx="650" cy="230" r="42"/>
+  </g>
+  <text x="450" y="560" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#1C1F23">4AB NET · MIDDLE EAST</text>
+</svg>

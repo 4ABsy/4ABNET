@@ -1,0 +1,228 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Cairo";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fonts/cairo-1.woff2") format("woff2");
+  unicode-range: U+0600-06FF, U+0750-077F, U+0870-0891, U+0897-08E1, U+08E3-08FF, U+200C-200E,
+    U+2010-2011, U+204F, U+2E41, U+FB50-FDFF, U+FE70-FE74, U+FE76-FEFC, U+102E0-102FB,
+    U+10E60-10E7E, U+10EC2-10EC7, U+10EC9-10EEE, U+10EF0-10EFF, U+1EE00-1EE03, U+1EE05-1EE1F,
+    U+1EE21-1EE22, U+1EE24, U+1EE27, U+1EE29-1EE32, U+1EE34-1EE37, U+1EE39, U+1EE3B, U+1EE42,
+    U+1EE47, U+1EE49, U+1EE4B, U+1EE4D-1EE4F, U+1EE51-1EE52, U+1EE54, U+1EE57, U+1EE59,
+    U+1EE5B, U+1EE5D, U+1EE5F, U+1EE61-1EE62, U+1EE64, U+1EE67-1EE6A, U+1EE6C-1EE72,
+    U+1EE74-1EE77, U+1EE79-1EE7C, U+1EE7E, U+1EE80-1EE89, U+1EE8B-1EE9B, U+1EEA1-1EEA3,
+    U+1EEA5-1EEA9, U+1EEAB-1EEBB, U+1EEF0-1EEF1;
+}
+@font-face {
+  font-family: "Cairo";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fonts/cairo-2.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
+    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4,
+    U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Cairo";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/fonts/cairo-3.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304,
+    U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@theme {
+  --font-sans: "Cairo", "Segoe UI", Tahoma, "Helvetica Neue", Arial, sans-serif;
+  --color-brand: #fa8f40;
+  --color-brand-strong: #e9762a;
+  --color-brand-ink: #8a3d05;
+  --color-brand-soft: #fff1e4;
+  --color-ink: #1c1f23;
+  --color-ink-soft: #4b5563;
+  --color-muted: #6b7280;
+  --color-line: #eae3da;
+  --color-page: #fbf8f4;
+  --color-success: #157347;
+  --color-success-soft: #e7f5ee;
+  --color-danger: #b42318;
+  --color-danger-soft: #feecea;
+  --color-warning: #8a5a00;
+  --color-warning-soft: #fff4d6;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-page font-sans text-ink antialiased;
+  }
+  ::selection {
+    background-color: #ffd7b5;
+    color: #1c1f23;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-brand-strong);
+    outline-offset: 2px;
+  }
+  a {
+    text-underline-offset: 3px;
+  }
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+  [dir="rtl"] .icon-directional {
+    transform: scaleX(-1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .btn,
+  .btn-primary,
+  .btn-secondary,
+  .btn-ghost,
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-primary {
+    @apply border-transparent bg-brand text-ink shadow-sm hover:bg-brand-strong;
+  }
+  .btn-secondary {
+    @apply border-line bg-white text-ink hover:bg-brand-soft;
+  }
+  .btn-ghost {
+    @apply border-transparent bg-transparent text-ink hover:bg-brand-soft;
+  }
+  .btn-danger {
+    @apply border-danger/20 bg-danger-soft text-danger hover:bg-danger hover:text-white;
+  }
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm text-ink shadow-sm outline-none transition placeholder:text-muted/70 focus:border-brand focus:ring-4 focus:ring-brand/20 disabled:bg-page disabled:text-muted;
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-semibold text-ink;
+  }
+  .hint {
+    @apply mt-1 text-xs leading-5 text-muted;
+  }
+
+  .card {
+    @apply rounded-2xl border border-line bg-white shadow-sm;
+  }
+  .card-pad {
+    @apply rounded-2xl border border-line bg-white p-4 shadow-sm sm:p-6;
+  }
+
+  .badge,
+  .badge-brand,
+  .badge-success,
+  .badge-danger,
+  .badge-warning,
+  .badge-neutral {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+  .badge-brand {
+    @apply bg-brand-soft text-brand-ink;
+  }
+  .badge-success {
+    @apply bg-success-soft text-success;
+  }
+  .badge-danger {
+    @apply bg-danger-soft text-danger;
+  }
+  .badge-warning {
+    @apply bg-warning-soft text-warning;
+  }
+  .badge-neutral {
+    @apply bg-page text-ink-soft ring-1 ring-line;
+  }
+
+  .link {
+    @apply text-brand-ink underline-offset-4 hover:underline;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold tracking-tight text-ink sm:text-3xl;
+  }
+  .section-subtitle {
+    @apply mt-2 max-w-2xl text-sm leading-7 text-muted sm:text-base;
+  }
+
+  .table-wrap {
+    @apply w-full overflow-x-auto rounded-2xl border border-line bg-white;
+  }
+  .table {
+    @apply w-full min-w-[640px] border-collapse text-sm;
+  }
+  .table th {
+    @apply border-b border-line bg-page/70 px-4 py-3 text-start text-xs font-bold uppercase tracking-wide text-muted;
+  }
+  .table td {
+    @apply border-b border-line/70 px-4 py-3 align-middle;
+  }
+  .table tr:last-child td {
+    @apply border-b-0;
+  }
+
+  .prose-policy {
+    @apply space-y-4 text-sm leading-8 text-ink-soft;
+  }
+
+  .nav-link {
+    @apply rounded-lg px-3 py-2 text-sm font-semibold text-ink-soft transition-colors hover:bg-brand-soft hover:text-brand-ink;
+  }
+
+  .skeleton {
+    @apply animate-pulse rounded-lg bg-line/70;
+  }
+
+  .ltr-value {
+    direction: ltr;
+    unicode-bidi: isolate;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .skip-link {
+    @apply fixed start-4 top-4 z-[100] -translate-y-24 rounded-xl bg-ink px-4 py-3 text-sm font-semibold text-white transition focus:translate-y-0;
+  }
+}
+
+@keyframes marquee-fade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-in {
+  animation: marquee-fade 0.35s ease-out both;
+}

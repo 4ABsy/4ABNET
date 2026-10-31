@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 600" role="img" aria-label="Sample global illustration">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E9EFFB"/><stop offset="1" stop-color="#FAC79B"/></linearGradient></defs>
+  <rect width="900" height="600" fill="url(#g)"/>
+  <circle cx="450" cy="280" r="170" fill="none" stroke="#1C1F23" stroke-width="8" opacity="0.75"/>
+  <ellipse cx="450" cy="280" rx="80" ry="170" fill="none" stroke="#1C1F23" stroke-width="6" opacity="0.55"/>
+  <path d="M280 280h340M310 210h280M310 350h280" stroke="#1C1F23" stroke-width="6" opacity="0.55"/>
+  <path d="M670 110a120 120 0 0 1 20 180" fill="none" stroke="#FA8F40" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="700" cy="105" r="14" fill="#FA8F40"/>
+  <text x="450" y="560" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#1C1F23">4AB NET · GLOBAL</text>
+</svg>

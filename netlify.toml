@@ -1,0 +1,24 @@
+# Netlify configuration for the 4AB NET Next.js application.
+#
+# Free plan notes (see docs/DEPLOYMENT.md):
+# - 300 credits/month, hard limit: when exhausted, the site is paused until the
+#   next billing cycle.
+# - Each successful production deploy costs 15 credits; Deploy Previews are free.
+# - Netlify's free plan allows commercial projects; Vercel's Hobby plan does not.
+
+[build]
+  command = "npm run build:netlify"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NEXT_TELEMETRY_DISABLED = "1"
+
+# Official Next.js runtime (App Router, server actions, route handlers, ISR).
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Runs after the Next.js runtime: removes local .env/storage/data files from the
+# packaged server function so development secrets are never uploaded.
+[[plugins]]
+  package = "./netlify/plugins/strip-local-files"

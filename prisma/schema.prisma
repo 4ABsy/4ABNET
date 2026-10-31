@@ -1,0 +1,487 @@
+// 4AB NET — Prisma schema
+// Primary target is PostgreSQL; this development environment has no PostgreSQL
+// server or Docker, so the local datasource is SQLite. See docs/ARCHITECTURE.md.
+// The schema intentionally uses no SQLite-only features. Json values that must
+// work on both engines are stored as strings and (de)serialized in lib/json.ts.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Administration, authentication, permissions
+// ---------------------------------------------------------------------------
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         String    @default("ADMIN") // OWNER | ADMIN
+  status       String    @default("ACTIVE") // ACTIVE | SUSPENDED
+  telegramId   String?   @unique
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  permissions     AdminPermission[]
+  sessions        AdminSession[]
+  invitationsSent AdminInvitation[]   @relation("InvitedBy")
+  auditLogs       AuditLog[]
+  statusChanges   OrderStatusHistory[]
+  reviewedOrders  Order[]              @relation("OrderReviewedBy")
+  reviewedPayments Payment[]           @relation("PaymentReviewedBy")
+  assignedUnits   InventoryUnit[]      @relation("UnitAssignedBy")
+  deliveredUnits  InventoryUnit[]      @relation("UnitDeliveredBy")
+  createdCoupons  Coupon[]             @relation("CouponCreatedBy")
+
+  @@index([status])
+}
+
+model AdminPermission {
+  id        String    @id @default(cuid())
+  adminId   String
+  permission String
+  createdAt  DateTime @default(now())
+
+  admin AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@unique([adminId, permission])
+  @@index([permission])
+}
+
+model AdminSession {
+  id         String   @id @default(cuid())
+  tokenHash  String   @unique
+  adminId    String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  lastUsedAt DateTime @default(now())
+  ip         String?
+  userAgent  String?
+
+  admin AdminUser @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([expiresAt])
+}
+
+model AdminInvitation {
+  id            String    @id @default(cuid())
+  email         String
+  name          String
+  role          String    @default("ADMIN") // ADMIN only; ownership cannot be transferred
+  permissions   String    @default("[]") // JSON array of permission keys
+  tokenHash     String    @unique
+  invitedById   String
+  expiresAt     DateTime
+  acceptedAt    DateTime?
+  revokedAt     DateTime?
+  createdAt     DateTime  @default(now())
+
+  invitedBy AdminUser @relation("InvitedBy", fields: [invitedById], references: [id], onDelete: Restrict)
+
+  @@index([email])
+  @@index([expiresAt])
+}
+
+model AdminLoginToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  adminId   String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([adminId])
+  @@index([expiresAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  adminId    String?
+  actorType  String   @default("ADMIN") // ADMIN | SYSTEM | TELEGRAM
+  action     String
+  entityType String
+  entityId   String?
+  details    String   @default("{}") // JSON, non-sensitive only
+  ip         String?
+  success    Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  admin AdminUser? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([adminId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Catalog
+// ---------------------------------------------------------------------------
+
+model Category {
+  id         String   @id @default(cuid())
+  slug       String   @unique
+  imageUrl   String?
+  sortOrder  Int      @default(0)
+  isVisible  Boolean  @default(true)
+  isArchived Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  translations CategoryTranslation[]
+  products     Product[]
+
+  @@index([sortOrder])
+}
+
+model CategoryTranslation {
+  id          String  @id @default(cuid())
+  categoryId  String
+  locale      String // ar | en | tr
+  name        String
+  description String?
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, locale])
+  @@index([locale])
+}
+
+model Product {
+  id                 String   @id @default(cuid())
+  slug               String   @unique
+  sku                String?  @unique
+  categoryId         String
+  imageUrl           String?
+  galleryJson        String   @default("[]") // JSON array of public URLs
+  priceMinor         Int // TRY minor units (kuruş)
+  originalPriceMinor Int?
+  currency           String   @default("TRY")
+  dataAllowance      String? // e.g. "10 GB"
+  validityDays       Int?
+  network            String?
+  countriesJson      String   @default("[]") // JSON array of country/region names
+  activationNotes    String?
+  isActive           Boolean  @default(true)
+  isFeatured         Boolean  @default(false)
+  isArchived         Boolean  @default(false)
+  sortOrder          Int      @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  category     Category             @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  translations ProductTranslation[]
+  orderItems   OrderItem[]
+  inventory    InventoryUnit[]
+  relatedFrom  ProductRelation[]    @relation("RelatedFrom")
+  relatedTo    ProductRelation[]    @relation("RelatedTo")
+
+  @@index([categoryId])
+  @@index([isActive, isArchived])
+  @@index([isFeatured])
+}
+
+model ProductTranslation {
+  id               String  @id @default(cuid())
+  productId        String
+  locale           String
+  name             String
+  shortDescription String?
+  description      String?
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, locale])
+  @@index([locale])
+}
+
+model ProductRelation {
+  id            String @id @default(cuid())
+  productId     String
+  relatedId     String
+  sortOrder     Int    @default(0)
+
+  product Product @relation("RelatedFrom", fields: [productId], references: [id], onDelete: Cascade)
+  related Product @relation("RelatedTo", fields: [relatedId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, relatedId])
+}
+
+model Banner {
+  id        String    @id @default(cuid())
+  imageUrl  String?
+  linkType  String    @default("NONE") // NONE | PRODUCT | CATEGORY | URL
+  linkValue String?
+  sortOrder Int       @default(0)
+  isVisible Boolean   @default(true)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  translations BannerTranslation[]
+
+  @@index([isVisible, sortOrder])
+}
+
+model BannerTranslation {
+  id       String  @id @default(cuid())
+  bannerId String
+  locale   String
+  title    String
+  subtitle String?
+  ctaLabel String?
+
+  banner Banner @relation(fields: [bannerId], references: [id], onDelete: Cascade)
+
+  @@unique([bannerId, locale])
+  @@index([locale])
+}
+
+// ---------------------------------------------------------------------------
+// Customers and orders
+// ---------------------------------------------------------------------------
+
+model Customer {
+  id               String   @id @default(cuid())
+  name             String
+  phone            String   @unique // normalized E.164-like value
+  locale           String   @default("ar")
+  telegramId       String?  @unique
+  telegramUsername String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  orders Order[]
+
+  @@index([phone])
+}
+
+// ---------------------------------------------------------------------------
+// Discount coupons
+// ---------------------------------------------------------------------------
+
+model Coupon {
+  id                 String    @id @default(cuid())
+  code               String    @unique // normalized upper-case code
+  type               String    @default("PERCENT") // PERCENT | FIXED
+  percentBasisPoints Int? // 100 = 1%, 10000 = 100%
+  amountMinor        Int? // fixed discount in kuruş
+  minSubtotalMinor   Int       @default(0)
+  maxDiscountMinor   Int? // cap for percentage coupons
+  usageLimit         Int? // total redemptions allowed; null = unlimited
+  perCustomerLimit   Int?      @default(1) // null = unlimited
+  usedCount          Int       @default(0)
+  startsAt           DateTime?
+  expiresAt          DateTime?
+  isActive           Boolean   @default(true)
+  createdById        String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  createdBy AdminUser? @relation("CouponCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  orders    Order[]
+
+  @@index([isActive, expiresAt])
+  @@index([createdAt])
+}
+
+model Order {
+  id                 String   @id @default(cuid())
+  reference          String   @unique // non-sequential public reference
+  trackingTokenHash  String   @unique
+  customerId         String
+  status             String   @default("AWAITING_PAYMENT")
+  paymentStatus      String   @default("UNPAID")
+  paymentMethod      String   @default("BANK_TRANSFER")
+  currency           String   @default("TRY")
+  subtotalMinor      Int
+  discountMinor      Int      @default(0)
+  totalMinor         Int
+  couponId           String?
+  couponCode         String? // snapshot of the code at order time
+  locale             String   @default("ar")
+  customerName       String // snapshot
+  customerPhone      String // snapshot
+  note               String? // customer-supplied note
+  adminNote          String? // internal staff note, never shown to customers
+  idempotencyKey     String?  @unique
+  inventoryReservedUntil DateTime?
+  reviewedById       String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  customer     Customer             @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  reviewedBy   AdminUser?           @relation("OrderReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  coupon       Coupon?              @relation(fields: [couponId], references: [id], onDelete: SetNull)
+  items        OrderItem[]
+  payment      Payment?
+  receipts     PaymentReceipt[]
+  history      OrderStatusHistory[]
+  inventory    InventoryUnit[]
+
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@index([customerId])
+  @@index([couponId])
+}
+
+model OrderItem {
+  id             String @id @default(cuid())
+  orderId        String
+  productId      String
+  productName    String // localized snapshot
+  productSlug    String
+  dataAllowance  String?
+  validityDays   Int?
+  unitPriceMinor Int
+  quantity       Int
+  lineTotalMinor Int
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+  inventory InventoryUnit[]
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model Payment {
+  id            String    @id @default(cuid())
+  orderId       String    @unique
+  method        String    @default("BANK_TRANSFER")
+  amountMinor   Int
+  currency      String    @default("TRY")
+  status        String    @default("UNPAID") // UNPAID | AWAITING_VERIFICATION | VERIFIED | REJECTED | REFUNDED
+  bankReference String?
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewNote    String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  order      Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  reviewedBy AdminUser?     @relation("PaymentReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+  receipts   PaymentReceipt[]
+
+  @@index([status])
+}
+
+model PaymentReceipt {
+  id           String   @id @default(cuid())
+  orderId      String
+  paymentId    String?
+  storagePath  String // private relative path; never public
+  originalName String
+  mimeType     String
+  sizeBytes    Int
+  sha256       String
+  uploadedAt   DateTime @default(now())
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  payment Payment? @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+}
+
+model OrderStatusHistory {
+  id         String   @id @default(cuid())
+  orderId    String
+  fromStatus String?
+  toStatus   String
+  actorType  String   @default("SYSTEM") // SYSTEM | ADMIN | TELEGRAM
+  adminId    String?
+  note       String?
+  createdAt  DateTime @default(now())
+
+  order Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  admin AdminUser? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Manual eSIM inventory
+// ---------------------------------------------------------------------------
+
+model InventoryUnit {
+  id             String    @id @default(cuid())
+  productId      String
+  status         String    @default("AVAILABLE") // AVAILABLE | RESERVED | ASSIGNED | REVOKED
+  activationCode String?
+  qrPath         String? // private storage path
+  instructions   String?
+  orderId        String?
+  orderItemId    String?
+  reservedUntil  DateTime?
+  assignedAt     DateTime?
+  assignedById   String?
+  deliveredAt    DateTime?
+  deliveredById  String?
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  product     Product    @relation(fields: [productId], references: [id], onDelete: Restrict)
+  order       Order?     @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  orderItem   OrderItem? @relation(fields: [orderItemId], references: [id], onDelete: SetNull)
+  assignedBy  AdminUser? @relation("UnitAssignedBy", fields: [assignedById], references: [id], onDelete: SetNull)
+  deliveredBy AdminUser? @relation("UnitDeliveredBy", fields: [deliveredById], references: [id], onDelete: SetNull)
+
+  @@index([productId, status])
+  @@index([orderId])
+  @@index([status, reservedUntil])
+  @@index([assignedById])
+  @@index([deliveredById])
+}
+
+// ---------------------------------------------------------------------------
+// Settings, notifications, Telegram idempotency
+// ---------------------------------------------------------------------------
+
+model StoreSetting {
+  key       String   @id
+  value     String // JSON value
+  updatedAt DateTime @updatedAt
+}
+
+model TelegramChat {
+  chatId    String   @id
+  locale    String   @default("ar")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TelegramUpdate {
+  updateId    String   @id
+  processedAt DateTime @default(now())
+}
+
+model TelegramNotification {
+  id        String    @id @default(cuid())
+  chatId    String
+  kind      String
+  payload   String // JSON
+  status    String    @default("PENDING") // PENDING | SENT | FAILED
+  attempts  Int       @default(0)
+  lastError String?
+  createdAt DateTime  @default(now())
+  sentAt    DateTime?
+
+  @@index([status, createdAt])
+}
+
+model InvoiceSequence {
+  id        String   @id @default("main")
+  lastValue Int      @default(1000)
+  updatedAt DateTime @updatedAt
+}

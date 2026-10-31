@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 600" role="img" aria-label="Sample offer">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#FA8F40"/>
+      <stop offset="0.55" stop-color="#F7B071"/>
+      <stop offset="1" stop-color="#FFF1E4"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="600" fill="url(#g)"/>
+  <circle cx="1400" cy="90" r="200" fill="#ffffff" opacity="0.35"/>
+  <circle cx="120" cy="540" r="180" fill="#ffffff" opacity="0.28"/>
+  <g transform="translate(100 150)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="26" font-weight="700" fill="#8A3D05">LIMITED OFFER</text>
+    <text x="0" y="95" font-family="Arial, sans-serif" font-size="74" font-weight="800" fill="#1C1F23">Save on data</text>
+    <text x="0" y="160" font-family="Arial, sans-serif" font-size="32" fill="#1C1F23" opacity="0.8">Sample promotional banner · replace from the dashboard</text>
+  </g>
+  <g transform="translate(1240 180)">
+    <circle cx="110" cy="110" r="100" fill="#1C1F23"/>
+    <text x="110" y="100" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#FA8F40">4AB</text>
+    <text x="110" y="140" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="700" fill="#FA8F40">NET</text>
+  </g>
+</svg>
