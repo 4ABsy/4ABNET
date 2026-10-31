@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@/lib/constants";
 import { createI18n } from "@/lib/i18n";
-import { getVisibleCategories, listProducts } from "@/lib/catalog";
+import { getVisibleCategories, listProducts, countActiveProducts } from "@/lib/catalog";
 import { ProductCard } from "@/components/product-card";
 import { EmptyState } from "@/components/empty-state";
 import { WifiIcon } from "@/components/icons";
@@ -42,15 +42,21 @@ export default async function ProductsPage({
   const categories = await getVisibleCategories(locale);
   const activeCategory = categories.find((category) => category.slug === categorySlug);
 
-  const all = await listProducts({
-    locale,
-    categoryId: activeCategory?.id,
-    sort,
-  });
+  const [products, total] = await Promise.all([
+    listProducts({
+      locale,
+      categoryId: activeCategory?.id,
+      sort,
+      skip: (page - 1) * PAGE_SIZE,
+      limit: PAGE_SIZE,
+    }),
+    activeCategory?.id
+      ? countActiveProducts({ categoryId: activeCategory.id, query: categorySlug || undefined })
+      : countActiveProducts({ query: categorySlug || undefined }),
+  ]);
 
-  const totalPages = Math.max(1, Math.ceil(all.length / PAGE_SIZE));
-  const currentPage = Math.min(page, totalPages);
-  const products = all.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const currentPage = page;
 
   function pageHref(nextPage: number) {
     const params = new URLSearchParams();
@@ -75,7 +81,7 @@ export default async function ProductsPage({
           )}
         </div>
         <p className="text-sm font-semibold text-muted">
-          {t("product.resultsCount", { count: all.length })}
+          {t("product.resultsCount", { count: total })}
         </p>
       </div>
 

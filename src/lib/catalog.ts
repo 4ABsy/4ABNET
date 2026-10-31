@@ -202,16 +202,13 @@ async function loadProducts(options: {
         : sort === "newest"
           ? [{ createdAt: "desc" as const }]
           : [{ sortOrder: "asc" as const }, { createdAt: "desc" as const }];
-  const [products, stocks] = await Promise.all([
-    prisma.product.findMany({
+  const products = await prisma.product.findMany({
       where,
       include: PRODUCT_INCLUDE,
       orderBy,
       take: limit,
       skip,
-    }),
-    getStockCounts([]),
-  ]);
+    });
   const productIds = products.map((p) => p.id);
   const stockMap = productIds.length ? await getStockCounts(productIds) : {};
   return products.map((p) => toProductView(p, locale, stockMap[p.id] ?? 0));
