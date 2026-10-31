@@ -11,7 +11,7 @@ Build a complete, production-oriented, full-stack e-commerce platform named **4A
 **Supported languages:** Arabic, English, and Turkish  
 **Primary audience:** Customers purchasing digital eSIM internet packages.
 
-The platform must include:
+The platform must include:--
 
 1. A complete e-commerce website.
 2. A responsive customer storefront.
