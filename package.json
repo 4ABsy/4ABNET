@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "next dev",
     "dev:fast": "next dev --turbopack",
-    "build": "prisma generate && next build",
-    "build:pg": "npm run schema:pg:check && prisma generate --schema prisma/postgres/schema.prisma && next build",
+    "build": "node scripts/postgres-schema.mjs && cp prisma/postgres/schema.prisma prisma/schema.prisma && prisma generate && next build",
+    "build:pg": "node scripts/postgres-schema.mjs && cp prisma/postgres/schema.prisma prisma/schema.prisma && prisma generate && next build",
     "build:netlify": "npm run db:pg:deploy && npm run build:pg",
     "start": "next start",
     "preview": "npm run build && next start",
