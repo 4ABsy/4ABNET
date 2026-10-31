@@ -39,6 +39,14 @@ export function toPostgresSchema(source) {
   }
 
   let output = source.replace('provider = "sqlite"', 'provider = "postgresql"');
+
+  // Add directUrl for the production PostgreSQL environment. The pooler URL
+  // remains in env("DATABASE_URL").
+  output = output.replace(
+    'url      = env("DATABASE_URL")',
+    'url       = env("DATABASE_URL")\n  directUrl = env("DIRECT_URL")',
+  );
+
   output = output.replace(SQLITE_GENERATOR, CLIENT_GENERATOR);
 
   // Replace the leading development-only comment block with a generated header.
