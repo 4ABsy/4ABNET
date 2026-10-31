@@ -7,7 +7,7 @@
 # - Netlify's free plan allows commercial projects; Vercel's Hobby plan does not.
 
 [build]
-  command = "npm run build:netlify"
+  command = "npm run build"
   publish = ".next"
 
 [build.environment]
