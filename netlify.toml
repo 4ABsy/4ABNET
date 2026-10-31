@@ -13,6 +13,9 @@
 [build.environment]
   NODE_VERSION = "22"
   NEXT_TELEMETRY_DISABLED = "1"
+  # NEXT_PUBLIC_SITE_URL is public by design: Next.js inlines it into the client
+  # bundle, so secrets scanning must not treat its value as a leaked secret.
+  SECRETS_SCAN_OMIT_KEYS = "NEXT_PUBLIC_SITE_URL"
 
 # Official Next.js runtime (App Router, server actions, route handlers, ISR).
 [[plugins]]

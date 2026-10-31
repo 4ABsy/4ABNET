@@ -245,6 +245,10 @@ node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"
 it after the first deploy, trigger a new deploy (15 credits) so the Mini App URLs
 and canonical links are correct.
 
+Do not mark `NEXT_PUBLIC_SITE_URL` as a secret in Netlify: its value ends up in the
+build output, which would fail secrets scanning. `netlify.toml` also excludes it
+via `SECRETS_SCAN_OMIT_KEYS` as a safeguard.
+
 `APP_SECRET` must stay stable across deploys: changing it invalidates every
 customer order-access cookie (customers can still track with reference + phone).
 
