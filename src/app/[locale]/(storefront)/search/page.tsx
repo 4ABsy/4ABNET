@@ -8,6 +8,8 @@ import { ProductCard } from "@/components/product-card";
 import { EmptyState } from "@/components/empty-state";
 import { SearchIcon } from "@/components/icons";
 
+export const revalidate = 60;
+
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};

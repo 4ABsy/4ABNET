@@ -9,6 +9,8 @@ import { ProductCard } from "@/components/product-card";
 import { ProductGallery, ProductPurchase } from "@/components/product-details";
 import { CheckIcon, QrIcon, ShieldIcon, WifiIcon } from "@/components/icons";
 
+export const revalidate = 60;
+
 export async function generateMetadata({
   params,
 }: {

@@ -8,6 +8,8 @@ import { ProductCard } from "@/components/product-card";
 import { EmptyState } from "@/components/empty-state";
 import { GridIcon } from "@/components/icons";
 
+export const revalidate = 60;
+
 export async function generateMetadata({
   params,
 }: {
