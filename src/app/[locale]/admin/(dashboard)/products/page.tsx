@@ -98,7 +98,7 @@ export default async function AdminProductsPage({
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
     }),
   ]);
-  const stocks = await getStockCounts(products.map((product) => product.id));
+  const stockMap = await getStockCounts(products.map(p => p.id));
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const baseParams = new URLSearchParams();
@@ -216,11 +216,11 @@ export default async function AdminProductsPage({
                     <td className="text-sm">{categoryName}</td>
                     <td className="font-bold">{money(product.priceMinor)}</td>
                     <td>
-                      <span className={stocks[product.id] ? "font-bold text-success" : "font-bold text-danger"}>
-                        {stocks[product.id] ?? 0}
+                      <span className={stockMap[product.id] ? "font-bold text-success" : "font-bold text-danger"}>
+                        {stockMap[product.id] ?? 0}
                       </span>
                       <p className="text-[11px] text-muted">
-                        {t("admin.inventory.availableCount", { count: stocks[product.id] ?? 0 })}
+                        {t("admin.inventory.availableCount", { count: stockMap[product.id] ?? 0 })}
                       </p>
                     </td>
                     <td>
