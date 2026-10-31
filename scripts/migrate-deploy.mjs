@@ -8,6 +8,7 @@
  *
  * DIRECT_URL is optional: when it is unset, DATABASE_URL is used.
  */
+import "dotenv/config";
 import { spawnSync } from "node:child_process";
 
 const url = process.env.DIRECT_URL?.trim() || process.env.DATABASE_URL?.trim();
