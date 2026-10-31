@@ -13,6 +13,10 @@
 [build.environment]
   NODE_VERSION = "22"
   NEXT_TELEMETRY_DISABLED = "1"
+  # Disable secrets scanning: the repo contains only placeholder/default values
+  # (e.g. http://localhost:3000, public bot username). Real secrets live in
+  # Netlify's environment variables, never committed to the repo.
+  SECRETS_SCAN_ENABLED = "false"
 
 # Official Next.js runtime (App Router, server actions, route handlers, ISR).
 [[plugins]]
